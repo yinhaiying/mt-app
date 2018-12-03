@@ -1,17 +1,24 @@
 <template>
   <div class="goods">
     <!--分类列表-->
-    <div class="menu-wrapper">
-      <ul>
+    <div  class="menu-wrapper" ref="menuScroll">
+      <ul >
         <!--专场-->
-        <li class="menu-item">
+        <li
+            class="menu-item "
+            :class="{'current':currentIndex === 0}"
+            @click="selectMenu(0)" >
           <p class="text">
             <img class="icon" :src="container.tag_icon" alt="专场" v-if="container.tag_icon">
             {{container.tag_name}}
           </p>
         </li>
-        <!--专场-->
-        <li class="menu-item" v-for="(item,index) in goods" :key="index">
+        <!--其他-->
+        <li
+            class="menu-item "
+            :class="{'current':currentIndex === index+1}"
+            v-for="(item,index) in goods" :key="index"
+            @click="selectMenu(index+1)">
           <p class="text">
             <img class="icon" :src="item.icon" alt="专场" v-if="item.icon">
             {{item.name}}
@@ -19,16 +26,16 @@
         </li>
       </ul>
     </div>
-    <div class="foods-wrapper">
+    <div class="foods-wrapper" ref="foodScroll">
       <ul>
         <!--专场-->
-        <li class="container-list" >
+        <li class="container-list food-list-hook" >
           <div v-for="(item,index) in container.operation_source_list" :key="index">
             <img :src="item.pic_url" alt="">
           </div>
         </li>
         <!--具体分类-->
-        <li v-for="(item,index) in goods" :key="index" class="food-list">
+        <li v-for="(item,index) in goods" :key="index" class="food-list food-list-hook">
           <h3 class="title">{{item.name}}</h3>
           <!--具体的商品列表-->
           <ul>
@@ -58,11 +65,16 @@
 </template>
 
 <script>
+  import BScroll from 'better-scroll'
   export default {
     data(){
       return {
         container:{},
-        goods:{}
+        goods:{},
+        listHeight:[],
+        menuScroll:{},
+        foodScroll:{},
+        scrollY:0
       }
     },
     created(){
@@ -74,13 +86,69 @@
           if(response.code === 0){
             this.container = response.data.container_operation_source;
             this.goods = response.data.food_spu_tags;
+            this.$nextTick(function(){
+              //  执行滚动方法
+              this.initScroll();
+              //  计算分类区间高度。获取每一个专场，热销li的高度
+              this.calculateHeight();
+
+              //  监听滚动位置
+
+              //  根据滚动位置，确认下标
+
+              //  通过下标，实现点击左侧，滚动到右侧
+            })
           }
         })
     },
-  //  计算属性是不能接收参数的
+
     methods:{
       head_bg(imgName){
         return "background-image: url(" + imgName + ");"
+      },
+      initScroll(){
+         this.menuScroll = new BScroll(this.$refs.menuScroll);
+         this.foodScroll = new BScroll(this.$refs.foodScroll,{
+             probeType:3
+           });
+      //   foodScroll监听事件：
+        this.foodScroll.on('scroll',(pos) => {
+          this.scrollY = Math.abs(Math.round(pos.y));
+        })
+      },
+      calculateHeight(){
+        let foodlist = this.$refs.foodScroll.getElementsByClassName('food-list-hook');
+        let height = 0;
+        this.listHeight.push(height);
+        for(let i = 0;i < foodlist.length;i++){
+          let item = foodlist[i];
+          height += item.clientHeight;
+          this.listHeight.push(height);
+        }
+
+      },
+      selectMenu(index){
+        let foodlist = this.$refs.foodScroll.getElementsByClassName('food-list-hook');
+        let element =foodlist[index];
+        //  滚动到对应元素的位置
+        this.foodScroll.scrollToElement(element,250)
+      }
+    },
+    //  计算属性是不能接收参数的
+    computed:{
+      currentIndex(){
+        for(let i = 0;i < this.listHeight.length;i++){
+        //  获取商品区间的范围
+          let height1 = this.listHeight[i];
+          let height2 = this.listHeight[i+1];
+
+        //  是否在上述区间
+          if( !height2 || (this.scrollY >= height1 && this.scrollY <= height2)){
+            return i;
+          }
+
+        }
+        return 0;
       }
     }
 
@@ -220,6 +288,16 @@
 .goods .foods-wrapper .food-list .food-item .content .price .unit{
   font-size: 12px;
   color: #BFBFBF;
+}
+
+  /*当前分类选中*/
+.goods .menu-wrapper .menu-item.current{
+  background: white;
+  font-weight: bold;
+  margin-top: -1px;
+}
+.goods .menu-wrapper .menu-item:first-child.current{
+  margin-top: 1px;
 }
 
 
