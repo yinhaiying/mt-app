@@ -30,7 +30,6 @@
     methods:{
       decreaseCart(){
         //数量减少。
-
         this.food.count--;
       },
       increaseCart(){
