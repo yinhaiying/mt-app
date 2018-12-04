@@ -37,7 +37,10 @@
           </div>
         </li>
         <!--具体分类-->
-        <li v-for="(item,index) in goods" :key="index" class="food-list food-list-hook">
+        <li
+          v-for="(item,index) in goods" :key="index"
+          class="food-list food-list-hook"
+          @click="showDetail(item)">
           <h3 class="title">{{item.name}}</h3>
           <!--具体的商品列表-->
           <ul>
@@ -64,9 +67,13 @@
         </li>
       </ul>
     </div>
+
+
     <!--购物车-->
     <app-shopcart :poiInfo = "poiInfo" :selectFoods ="selectFoods"></app-shopcart>
 
+    <!--商品详情-->
+    <app-product-detail :food="selectFood" ref="foodView"></app-product-detail>
   </div>
 </template>
 
@@ -74,6 +81,8 @@
   import BScroll from 'better-scroll'
   import Shopcart from '../shopcart/Shopcart'
   import Cratcontrol from '../cartcontrol/Cartcontrol'
+  import ProductDetail from '../productDetail/ProductDetail'
+
   export default {
     data(){
       return {
@@ -83,12 +92,14 @@
         listHeight:[],
         menuScroll:{},
         foodScroll:{},
-        scrollY:0
+        scrollY:0,
+        selectFood:{}
       }
     },
     components:{
       "app-shopcart":Shopcart,
-      "app-cartcontrol":Cratcontrol
+      "app-cartcontrol":Cratcontrol,
+      "app-product-detail":ProductDetail
     },
     created(){
       fetch('/api/goods')
@@ -153,10 +164,15 @@
         let count = 0;
         spus.forEach((food) => {
           if(food.count){
-            count += food.count;
+            count += food.count
           }
         })
         return count;
+      },
+      showDetail(food){
+        this.selectFood = food
+        //通过ref获取到子组建，然后调用子组件下的方法
+        this.$refs.foodView.showView()
       }
     },
     //  计算属性是不能接收参数的
