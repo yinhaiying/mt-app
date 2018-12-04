@@ -24,5 +24,5 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 lesson3 头部样式设计
 lesson4 点菜页面设计
 lesson5 实现滚动
-
+lesson6 购物车添加功能的实现
 ```

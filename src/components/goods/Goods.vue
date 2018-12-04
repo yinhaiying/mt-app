@@ -23,9 +23,11 @@
             <img class="icon" :src="item.icon" alt="专场" v-if="item.icon">
             {{item.name}}
           </p>
+          <i class="num" v-show="calculateCount(item.spus)">{{calculateCount(item.spus)}}</i>
         </li>
       </ul>
     </div>
+    <!--商品列表-->
     <div class="foods-wrapper" ref="foodScroll">
       <ul>
         <!--专场-->
@@ -54,28 +56,39 @@
                   <span class="unit">/{{food.unit}}</span>
                 </p>
               </div>
+              <div class="cartcontrol-wrapper">
+                <app-cartcontrol :food = "food" ></app-cartcontrol>
+              </div>
             </li>
           </ul>
         </li>
       </ul>
     </div>
+    <!--购物车-->
+    <app-shopcart :poiInfo = "poiInfo" :selectFoods ="selectFoods"></app-shopcart>
 
-    <!--商品列表-->
   </div>
 </template>
 
 <script>
   import BScroll from 'better-scroll'
+  import Shopcart from '../shopcart/Shopcart'
+  import Cratcontrol from '../cartcontrol/Cartcontrol'
   export default {
     data(){
       return {
         container:{},
-        goods:{},
+        goods:[],
+        poiInfo:{},
         listHeight:[],
         menuScroll:{},
         foodScroll:{},
         scrollY:0
       }
+    },
+    components:{
+      "app-shopcart":Shopcart,
+      "app-cartcontrol":Cratcontrol
     },
     created(){
       fetch('/api/goods')
@@ -84,8 +97,9 @@
         })
         .then((response) => {
           if(response.code === 0){
-            this.container = response.data.container_operation_source;
-            this.goods = response.data.food_spu_tags;
+            this.container = response.data.container_operation_source
+            this.goods = response.data.food_spu_tags
+            this.poiInfo = response.data.poi_info
             this.$nextTick(function(){
               //  执行滚动方法
               this.initScroll();
@@ -101,15 +115,17 @@
           }
         })
     },
-
     methods:{
       head_bg(imgName){
         return "background-image: url(" + imgName + ");"
       },
       initScroll(){
-         this.menuScroll = new BScroll(this.$refs.menuScroll);
+         this.menuScroll = new BScroll(this.$refs.menuScroll,{
+           click:true
+         });
          this.foodScroll = new BScroll(this.$refs.foodScroll,{
-             probeType:3
+             probeType:3,
+             click:true
            });
       //   foodScroll监听事件：
         this.foodScroll.on('scroll',(pos) => {
@@ -132,6 +148,15 @@
         let element =foodlist[index];
         //  滚动到对应元素的位置
         this.foodScroll.scrollToElement(element,250)
+      },
+      calculateCount(spus){
+        let count = 0;
+        spus.forEach((food) => {
+          if(food.count){
+            count += food.count;
+          }
+        })
+        return count;
       }
     },
     //  计算属性是不能接收参数的
@@ -149,6 +174,17 @@
 
         }
         return 0;
+      },
+      selectFoods(){
+        let foods = [];
+        this.goods.forEach((myFoods) => {
+          myFoods.spus.forEach((food) => {
+              if(food.count > 0){
+                foods.push(food);
+              }
+          })
+        })
+        return foods;
       }
     }
 
@@ -173,6 +209,7 @@
 .goods .menu-wrapper .menu-item{
   padding:16px 23px 15px 10px;
   border-bottom:1px solid #e4e4e4;
+  position:relative;
 }
 
 .goods .menu-wrapper .menu-item .text{
@@ -300,6 +337,27 @@
   margin-top: 1px;
 }
 
+  /*购物车添加减少 样式*/
 
+
+.goods .foods-wrapper .food-list .food-item .cartcontrol-wrapper{
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+/*左侧列表显示商品数量 样式*/
+.goods .menu-wrapper .menu-item .num{
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  color: white;
+  background: red;
+  text-align: center;
+  font-size: 7px;
+  line-height: 13px;
+}
 
 </style>
