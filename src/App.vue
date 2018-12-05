@@ -3,7 +3,7 @@
     <!--头部-->
   <app-header :poiInfo="poi_info"></app-header>
     <!--导航-->
-    <app-nav></app-nav>
+    <app-nav :commentNum="commentNum"></app-nav>
     <!--内容-->
     <div class="content">
       <router-view></router-view>
@@ -24,7 +24,8 @@ export default {
   },
   data(){
     return {
-      poi_info:{}
+      poi_info:{},
+      commentNum:0
     }
   },
   created(){
@@ -35,6 +36,16 @@ export default {
       .then((response) => {
         if(response.code === 0){
           this.poi_info = response.data.poi_info;
+        }
+      })
+
+    fetch('/api/ratings')
+      .then((res) => {
+        return res.json()
+      })
+      .then((response) => {
+        if(response.code === 0){
+          this.commentNum = response.data.comment_num
         }
       })
   }
