@@ -71,7 +71,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         res.json(ratings);
       })
 
-      app.get('/api/goods',(req,res) => {
+      app.get('/api/seller',(req,res) => {
         res.json(seller);
       })
     }
