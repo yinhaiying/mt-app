@@ -40,11 +40,11 @@
         <li
           v-for="(item,index) in goods" :key="index"
           class="food-list food-list-hook"
-          @click="showDetail(item)">
+         >
           <h3 class="title">{{item.name}}</h3>
           <!--具体的商品列表-->
           <ul>
-            <li v-for="(food,index) in item.spus" :key="index" class="food-item">
+            <li  @click="showDetail(food)" v-for="(food,index) in item.spus" :key="index" class="food-item">
               <div class="icon" :style="head_bg(food.picture)"></div>
               <div class="content">
                 <h3 class="name">{{food.name}}</h3>

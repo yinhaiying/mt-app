@@ -1,6 +1,6 @@
 <template>
   <transition name="food-detail">
-    <div class="food" v-show="showFlag">
+    <div class="food" ref="foodView" v-show="showFlag">
       <div class="food-wrapper">
         <div class="food-content">
           <div class="img-wrapper">
@@ -32,6 +32,49 @@
             </div>
           </div>
         </div>
+        <app-split></app-split>
+        <!--外卖评价-->
+        <div class="rating-wrapper">
+          <!--评价头部-->
+          <div class="rating-title">
+            <div class="like-ratio" v-if="food.rating">
+              <span class="title">{{food.rating.title}}</span>
+              <span class="ratio">
+                {{food.rating.like_ratio_desc}}
+                <i>{{food.rating.like_like_ratio}}</i>
+              </span>
+            </div>
+
+            <div class="snd-title" v-if="food.rating">
+              <span class="text">{{food.rating.snd_title}}</span>
+              <span class="icon icon-keyboard_arrow_right"></span>
+            </div>
+          </div>
+          <!--评价内容-->
+
+          <ul class="rating-content" v-if="food.rating">
+            <li v-for = "(comment,index) in food.rating.comment_list"
+                :key="index" class="comment-item">
+              <div class="comment-header">
+                <img :src="comment.user_icon" v-if="comment.user_icon" />
+                <img src="./img/anonymity.png" v-if="!comment.user_icon"  />
+              </div>
+              <div class="comment-main">
+                <div class="user">
+                  {{comment.user_name}}
+                </div>
+                <div class="time">
+                  {{comment.comment_time}}
+                </div>
+                <div class="content">
+                  {{comment.comment_content}}
+                </div>
+              </div>
+
+            </li>
+
+          </ul>
+        </div>
       </div>
     </div>
   </transition>
@@ -41,10 +84,13 @@
 <script>
   import Vue from 'vue'
   import Cartcontrol from '../cartcontrol/Cartcontrol'
+  import Split from '../split/Split'
+  import BScroll from 'better-scroll'
   export default {
     data(){
       return {
-        showFlag:false
+        showFlag:false,
+        scroll:null
       }
     },
     props:{
@@ -55,6 +101,16 @@
     methods:{
       showView(){
         this.showFlag = true
+        this.$nextTick(()=>{
+          if(!this.scroll){
+            this.scroll = new BScroll(this.$refs.foodView,{
+              click:true
+            })
+          }else{
+            this.scroll.refresh()
+          }
+
+        })
       },
       closeView(){
         this.showFlag = false
@@ -64,7 +120,8 @@
       }
     },
     components:{
-      'app-cartcontrol':Cartcontrol
+      'app-cartcontrol':Cartcontrol,
+      'app-split':Split
     }
   }
 </script>
@@ -182,5 +239,83 @@
     position: absolute;
     right: 12px;
     bottom: 10px;
+  }
+
+  /*商品评价*/
+  .food .food-wrapper .rating-wrapper{
+    padding-left: 16px;
+  }
+  .food .food-wrapper .rating-wrapper .rating-title{
+    padding: 16px 16px 16px 0;
+  }
+  .food .food-wrapper .rating-wrapper .rating-title .like-ratio{
+    float: left;
+    font-size: 0;
+  }
+  .food .food-wrapper .rating-wrapper .rating-title .like-ratio .title{
+    font-size: 13px;
+  }
+  .food .food-wrapper .rating-wrapper .rating-title .like-ratio .ratio{
+    font-size: 11px;
+  }
+  .food .food-wrapper .rating-wrapper .rating-title .like-ratio .ratio i{
+    color: #FB4E44;
+    font-size: 11px;
+  }
+
+  .food .food-wrapper .rating-wrapper .rating-title .snd-title{
+    float: right;
+    font-size: 0;
+  }
+  .food .food-wrapper .rating-wrapper .rating-title .snd-title .text,
+  .food .food-wrapper .rating-wrapper .rating-title .snd-title .icon
+  {
+    font-size: 13px;
+    color: #9D9D9D;
+    display: inline-block;
+  }
+  .food .food-wrapper .rating-wrapper .rating-title .snd-title .icon{
+    margin-left: 12px;
+  }
+
+
+  .food .food-wrapper .rating-wrapper .comment-item{
+    padding: 15px 14px 17px 0;
+    border-bottom: 1px solid #F4F4F4;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+  }
+  .food .food-wrapper .rating-wrapper .comment-item .comment-header{
+    flex: 0 0 41px;
+    margin-right: 10px;
+  }
+  .food .food-wrapper .rating-wrapper .comment-item .comment-header img{
+    width: 41px;
+    height: 41px;
+    border-radius: 50%;
+  }
+
+  .food .food-wrapper .rating-wrapper .comment-item .comment-main{
+    flex: 1;
+    margin-top: 6px;
+  }
+  .food .food-wrapper .rating-wrapper .comment-item .comment-main .user{
+    width: 50%;
+    float: left;
+    font-size: 12px;
+    color: #333333;
+  }
+  .food .food-wrapper .rating-wrapper .comment-item .comment-main .time{
+    width: 50%;
+    float: right;
+    text-align: right;
+    font-size: 10px;
+    color: #666666;
+  }
+  .food .food-wrapper .rating-wrapper .comment-item .comment-main .content{
+    margin-top: 17px;
+    font-size: 13px;
+    line-height: 19px;
   }
 </style>
